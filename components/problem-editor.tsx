@@ -24,6 +24,7 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
     const [formData, setFormData] = React.useState<Partial<Problem>>({});
     const [tagInput, setTagInput] = React.useState('');
     const [isCopied, setIsCopied] = React.useState(false);
+    const [isSaved, setIsSaved] = React.useState(false);
     const [confirmDelete, setConfirmDelete] = React.useState(false);
     const [predictions, setPredictions] = React.useState<LeetCodeProblem[]>([]);
     const [numberPredictions, setNumberPredictions] = React.useState<LeetCodeProblem[]>([]);
@@ -96,6 +97,8 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
             notesHeight: notesHeight
         };
         onSave(p);
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2000);
     };
 
     const copyCode = () => {
@@ -139,20 +142,40 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
     }, [formData]); // Re-bind when formData changes so we save the latest
 
     return (
-        <div className="flex flex-col h-full bg-background">
+        <div className="flex flex-col h-full bg-background relative">
+            {/* Saved Toast */}
+            <div
+                className={`fixed bottom-6 right-6 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 z-50 ${isSaved ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
+                    }`}
+            >
+                Saved
+            </div>
+
             {/* Toolbar */}
-            <div className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
-                <h2 className="text-lg font-semibold">{problem ? 'Edit Problem' : 'New Problem'}</h2>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={onNew}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        New
-                    </Button>
+            <div className="flex items-center justify-between px-4 py-2 border-b bg-background sticky top-0 z-10">
+                <h2 className="text-sm font-medium truncate text-muted-foreground">
+                    {problem ? (
+                        <>
+                            <span className="text-foreground font-semibold">
+                                {formData.number ? `${formData.number}. ` : ''}{formData.title || 'Untitled'}
+                            </span>
+                        </>
+                    ) : (
+                        <span className="text-foreground font-semibold">New Problem</span>
+                    )}
+                </h2>
+                <div className="flex gap-1.5">
+                    <button
+                        onClick={onNew}
+                        className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                        title="New Problem"
+                    >
+                        <Plus className="w-4 h-4" />
+                    </button>
                     {problem && (
-                        <Button
-                            variant={confirmDelete ? "destructive" : "ghost"}
-                            size="sm"
-                            className={confirmDelete ? "" : "text-destructive hover:bg-destructive/10"}
+                        <button
+                            className={`p-1.5 rounded-md transition-colors ${confirmDelete ? 'bg-destructive text-white' : 'hover:bg-destructive/10 text-destructive'}`}
+                            title={confirmDelete ? 'Click again to confirm' : 'Delete'}
                             onClick={() => {
                                 if (confirmDelete) {
                                     onDelete(problem.id);
@@ -163,14 +186,17 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
                                 }
                             }}
                         >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            {confirmDelete ? 'Confirm Delete' : 'Delete'}
-                        </Button>
+                            <Trash2 className="w-4 h-4" />
+                        </button>
                     )}
-                    <Button size="sm" onClick={handleSave}>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save ({navigator.platform.includes('Mac') ? '⌘S' : 'Ctrl+S'})
-                    </Button>
+                    <button
+                        onClick={handleSave}
+                        className="px-2.5 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs font-medium flex items-center gap-1.5"
+                        title={navigator.platform.includes('Mac') ? '⌘S' : 'Ctrl+S'}
+                    >
+                        <Save className="w-3.5 h-3.5" />
+                        Save
+                    </button>
                 </div>
             </div>
 
@@ -277,14 +303,26 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
 
                 <div className="flex-shrink-0">
                     <label className="text-sm font-medium mb-1 block text-muted-foreground">URL</label>
-                    <div className="relative">
-                        <ExternalLink className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-                        <Input
-                            value={formData.url || ''}
-                            onChange={e => handleChange('url', e.target.value)}
-                            placeholder="https://leetcode.com/problems/..."
-                            className="pl-9 bg-secondary border-input"
-                        />
+                    <div className="flex gap-2">
+                        <div className="relative flex-grow">
+                            <ExternalLink className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+                            <Input
+                                value={formData.url || ''}
+                                onChange={e => handleChange('url', e.target.value)}
+                                placeholder="https://leetcode.com/problems/..."
+                                className="pl-9 bg-secondary border-input"
+                            />
+                        </div>
+                        {formData.url && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-10 px-3"
+                                onClick={() => window.open(formData.url, '_blank')}
+                            >
+                                Open
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -441,7 +479,7 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
                 <div className="text-xs text-muted-foreground text-right flex-shrink-0">
                     Last edited: {formData.dateEdited ? new Date(formData.dateEdited).toLocaleString() : 'Never'}
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
