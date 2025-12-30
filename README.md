@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LeetTrack
 
-## Getting Started
+**LeetTrack** is a beautiful, private, and offline-first desktop application for tracking your LeetCode problem-solving journey. Built with **Tauri** and **Next.js**, it combines the performance of a native app with the modern UI of the web.
 
-First, run the development server:
+![App Icon](resources/app-icon.png)
+
+## ✨ Features
+
+*   **🚀 Instant Auto-Fill**: Type a problem title (e.g., "Two Sum") or number, and LeetTrack instantly populates the Number, Difficulty, Tags, and URL using its offline database of **3,792+ problems**.
+*   **💾 File System Persistence**: Your data is saved securely to a local JSON file on your machine (`leettrack-data.json`). Your progress survives app updates, uninstalls, and can be easily backed up.
+*   **⚡ Native Performance**: Built on Rust (Tauri), the app is blazingly fast and lightweight (~10MB installer) compared to Electron apps.
+*   **🎨 Beautiful UI**: Crafted with `shadcn/ui` and Tailwind CSS, featuring a clean Indigo theme, dark mode support, and a responsive layout.
+*   **📝 Rich Editor**:
+    *   **Live Syntax Highlighting**: Python code editor with VS Code-like experience (line numbers, folding, One Dark theme).
+    *   **Smart Tagging**: Auto-complete tags and one-click presets for common topics (DP, Graphs, Arrays).
+    *   **Inline Management**: Edit, delete, and organize problems without leaving the flow.
+
+## 🛠️ Tech Stack
+
+*   **Frontend**: [Next.js](https://nextjs.org/) (React), [Tailwind CSS](https://tailwindcss.com/)
+*   **UI Components**: [shadcn/ui](https://ui.shadcn.com/), [Lucide Icons](https://lucide.dev/)
+*   **Backend / Native**: [Tauri v2](https://tauri.app/) (Rust)
+*   **Editor**: [CodeMirror](https://uiwjs.github.io/react-codemirror/)
+*   **State**: Local persistence via Tauri File System Plugin
+
+## 📦 Installation
+
+### Development
+1.  **Prerequisites**: ensuring you have `pnpm` and [Rust](https://www.rust-lang.org/tools/install) installed.
+2.  **Install Dependencies**:
+    ```bash
+    pnpm install
+    ```
+3.  **Run Locally**:
+    ```bash
+    pnpm tauri:dev
+    ```
+
+### Build for Production
+To create a native application bundle (e.g., `.dmg` for macOS):
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm tauri:build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The output will be found in `src-tauri/target/release/bundle/`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📂 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+*   `app/`: Next.js app router pages and logic.
+*   `components/`: React UI components (ProblemEditor, ProblemList).
+*   `lib/`: Core logic (Storage adapter, LeetCode data search).
+*   `src-tauri/`: Rust backend configuration and capabilities.
+*   `public/problems.json`: Offline database of LeetCode questions.
 
-## Learn More
+## 📄 License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT © [Danny Fisher](https://github.com/DannyFisher1)
