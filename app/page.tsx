@@ -57,7 +57,7 @@ export default function TrackerPage() {
   return (
     <div className="h-screen w-full overflow-hidden bg-background">
       <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
+        <ResizablePanel defaultSize={18} minSize={15} maxSize={30}>
           <ProblemList
             problems={problems}
             selectedId={selectedId}

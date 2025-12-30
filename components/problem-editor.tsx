@@ -28,6 +28,10 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
     const [predictions, setPredictions] = React.useState<LeetCodeProblem[]>([]);
     const [numberPredictions, setNumberPredictions] = React.useState<LeetCodeProblem[]>([]);
 
+    // Refs for textarea height capture
+    const descRef = React.useRef<HTMLTextAreaElement>(null);
+    const notesRef = React.useRef<HTMLTextAreaElement>(null);
+
     React.useEffect(() => {
         if (problem) {
             setFormData({ ...problem });
@@ -38,7 +42,9 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
                 url: '',
                 tags: [],
                 description: '',
-                code: ''
+                code: '',
+                descriptionHeight: undefined,
+                notesHeight: undefined
             });
         }
     }, [problem]);
@@ -70,6 +76,10 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
 
     const handleSave = () => {
         const now = new Date().toISOString();
+        // Capture current textarea heights from DOM
+        const descHeight = descRef.current?.offsetHeight;
+        const notesHeight = notesRef.current?.offsetHeight;
+
         const p: Problem = {
             id: formData.id || Date.now().toString(),
             number: formData.number || '',
@@ -81,7 +91,9 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
             notes: formData.notes || '',
             code: formData.code || '',
             dateAdded: formData.dateAdded || now,
-            dateEdited: now
+            dateEdited: now,
+            descriptionHeight: descHeight,
+            notesHeight: notesHeight
         };
         onSave(p);
     };
@@ -114,6 +126,18 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
         }
     };
 
+    // Keyboard shortcut for Save
+    React.useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [formData]); // Re-bind when formData changes so we save the latest
+
     return (
         <div className="flex flex-col h-full bg-background">
             {/* Toolbar */}
@@ -145,14 +169,14 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
                     )}
                     <Button size="sm" onClick={handleSave}>
                         <Save className="w-4 h-4 mr-2" />
-                        Save
+                        Save ({navigator.platform.includes('Mac') ? '⌘S' : 'Ctrl+S'})
                     </Button>
                 </div>
             </div>
 
             {/* Form Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                <div className="flex gap-4">
+            <div className="flex-1 flex flex-col overflow-hidden p-6 space-y-4">
+                <div className="flex gap-4 flex-shrink-0">
                     <div className="w-24 flex-shrink-0 relative">
                         <label className="text-sm font-medium mb-1 block text-muted-foreground">Number</label>
                         <Input
@@ -251,7 +275,7 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
                     </div>
                 </div>
 
-                <div>
+                <div className="flex-shrink-0">
                     <label className="text-sm font-medium mb-1 block text-muted-foreground">URL</label>
                     <div className="relative">
                         <ExternalLink className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
@@ -264,7 +288,7 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
                     </div>
                 </div>
 
-                <div>
+                <div className="flex-shrink-0">
                     <label className="text-sm font-medium mb-1 block text-muted-foreground">Tags</label>
 
                     {/* Selected Tags + Add Button */}
@@ -360,44 +384,49 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
                     )}
                 </div>
 
-                <Separator />
+                <div className="space-y-4 flex-shrink-0">
+                    <div>
+                        <label className="text-sm font-medium mb-1 block text-muted-foreground">Description / Examples</label>
+                        <Textarea
+                            ref={descRef}
+                            value={formData.description || ''}
+                            onChange={e => handleChange('description', e.target.value)}
+                            style={{ height: formData.descriptionHeight ? `${formData.descriptionHeight}px` : undefined }}
+                            className="min-h-[100px] bg-secondary border-input text-sm font-normal resize-y"
+                            placeholder="Problem description and examples..."
+                        />
+                    </div>
 
-                <div>
-                    <label className="text-sm font-medium mb-1 block text-muted-foreground">Description / Examples</label>
-                    <Textarea
-                        value={formData.description || ''}
-                        onChange={e => handleChange('description', e.target.value)}
-                        className="min-h-[20px] bg-secondary border-input"
-                        placeholder="Problem description and examples..."
-                    />
+                    <div>
+                        <label className="text-sm font-medium mb-1 block text-muted-foreground">Notes / Strategy</label>
+                        <Textarea
+                            ref={notesRef}
+                            value={formData.notes || ''}
+                            onChange={e => handleChange('notes', e.target.value)}
+                            style={{ height: formData.notesHeight ? `${formData.notesHeight}px` : undefined }}
+                            className="min-h-[100px] bg-secondary border-input text-sm font-normal resize-y"
+                            placeholder="Your personal notes, approach, time complexity..."
+                        />
+                    </div>
                 </div>
 
-                <div>
-                    <label className="text-sm font-medium mb-1 block text-muted-foreground">Notes / Strategy</label>
-                    <Textarea
-                        value={formData.notes || ''}
-                        onChange={e => handleChange('notes', e.target.value)}
-                        className="min-h-[20px] bg-secondary border-input"
-                        placeholder="Your personal notes, approach, time complexity..."
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center">
+                <div className="flex-grow flex flex-col min-h-0">
+                    <div className="flex justify-between items-center mb-1 flex-shrink-0">
                         <label className="text-sm font-medium">Solution Code (Python)</label>
                         <Button variant="ghost" size="sm" onClick={copyCode} className="h-6 text-xs">
                             <Copy className="w-3 h-3 mr-1" />
                             {isCopied ? 'Copied' : 'Copy'}
                         </Button>
                     </div>
-                    <div className="rounded-md overflow-hidden border border-input">
+                    <div className="flex-grow rounded-md overflow-hidden border border-input relative">
                         <CodeMirror
                             value={formData.code || ''}
-                            height="300px"
+                            height="100%"
                             theme={oneDark}
                             extensions={[python()]}
                             onChange={(value) => handleChange('code', value)}
                             placeholder="# Paste your Python solution here..."
+                            className="absolute inset-0 text-sm"
                             basicSetup={{
                                 lineNumbers: true,
                                 highlightActiveLineGutter: true,
@@ -409,7 +438,7 @@ export function ProblemEditor({ problem, allTags, onSave, onDelete, onNew }: Pro
                     </div>
                 </div>
 
-                <div className="text-xs text-muted-foreground text-right">
+                <div className="text-xs text-muted-foreground text-right flex-shrink-0">
                     Last edited: {formData.dateEdited ? new Date(formData.dateEdited).toLocaleString() : 'Never'}
                 </div>
             </div>

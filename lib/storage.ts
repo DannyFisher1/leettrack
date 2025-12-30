@@ -10,6 +10,9 @@ export interface Problem {
   code: string;
   dateAdded: string;
   dateEdited: string;
+  // UI state
+  descriptionHeight?: number;
+  notesHeight?: number;
 }
 
 const STORAGE_KEY = 'leetTrackerData';

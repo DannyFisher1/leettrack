@@ -19,7 +19,17 @@ export function ProblemList({ problems, selectedId, onSelect }: ProblemListProps
         const textMatch = (p.title + p.tags.join(' ') + (p.number || '')).toLowerCase().includes(filterText.toLowerCase());
         const diffMatch = filterDiff === 'All' || p.difficulty === filterDiff;
         return textMatch && diffMatch;
-    }).sort((a, b) => new Date(b.dateEdited).getTime() - new Date(a.dateEdited).getTime());
+    }).sort((a, b) => {
+        // Sort by number if both have numbers
+        const numA = parseInt(a.number || '0');
+        const numB = parseInt(b.number || '0');
+        if (numA && numB) return numA - numB;
+        if (numA) return -1; // numA has number, b doesn't -> A first
+        if (numB) return 1;  // numB has number, a doesn't -> B first
+
+        // Fallback to date edited descending
+        return new Date(b.dateEdited).getTime() - new Date(a.dateEdited).getTime();
+    });
 
     const getDiffColor = (diff: string) => {
         switch (diff) {
@@ -32,27 +42,27 @@ export function ProblemList({ problems, selectedId, onSelect }: ProblemListProps
 
     return (
         <div className="flex flex-col h-full bg-sidebar border-r border-sidebar-border">
-            <div className="p-6 border-b border-sidebar-border space-y-4">
-                <div className="flex items-center gap-2 font-bold text-lg text-primary">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6 stroke-primary fill-none stroke-2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" /></svg>
+            <div className="p-4 border-b border-sidebar-border space-y-3">
+                <div className="flex items-center gap-2 font-bold text-base text-primary">
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 stroke-primary fill-none stroke-2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" /></svg>
                     LeetTrack
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                     <div className="relative">
                         <Input
-                            placeholder="Search problems..."
+                            placeholder="Search..."
                             value={filterText}
                             onChange={e => setFilterText(e.target.value)}
-                            className="pl-9 bg-background border-input"
+                            className="pl-8 bg-background border-input h-8 text-xs"
                         />
-                        <svg className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                        <svg className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                     </div>
                     <Select value={filterDiff} onValueChange={setFilterDiff}>
-                        <SelectTrigger className="bg-background border-input">
+                        <SelectTrigger className="bg-background border-input h-8 text-xs">
                             <SelectValue placeholder="Difficulty" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="All">All Difficulties</SelectItem>
+                            <SelectItem value="All">All</SelectItem>
                             <SelectItem value="Easy">Easy</SelectItem>
                             <SelectItem value="Medium">Medium</SelectItem>
                             <SelectItem value="Hard">Hard</SelectItem>
@@ -67,18 +77,18 @@ export function ProblemList({ problems, selectedId, onSelect }: ProblemListProps
                         <div
                             key={p.id}
                             onClick={() => onSelect(p.id)}
-                            className={`p-3 rounded-md cursor-pointer transition-colors border-l-[3px] ${selectedId === p.id ? 'bg-sidebar-accent border-primary' : 'hover:bg-sidebar-accent/50 border-transparent'}`}
+                            className={`p-2 rounded-md cursor-pointer transition-colors border-l-[3px] ${selectedId === p.id ? 'bg-sidebar-accent border-primary' : 'hover:bg-sidebar-accent/50 border-transparent'}`}
                         >
-                            <div className="flex justify-between items-center mb-1">
-                                <div className="font-medium text-sm truncate pr-2 text-sidebar-foreground">
+                            <div className="flex justify-between items-center mb-0.5">
+                                <div className="font-medium text-xs truncate pr-2 text-sidebar-foreground">
                                     {p.number ? <span className="mr-1 text-muted-foreground">{p.number}.</span> : null}
                                     {p.title || 'Untitled'}
                                 </div>
-                                <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 h-5 font-semibold uppercase ${getDiffColor(p.difficulty)}`}>
+                                <Badge variant="secondary" className={`text-[9px] px-1 py-0 h-4 font-semibold uppercase ${getDiffColor(p.difficulty)}`}>
                                     {p.difficulty}
                                 </Badge>
                             </div>
-                            <div className="text-xs text-muted-foreground truncate">
+                            <div className="text-[10px] text-muted-foreground truncate">
                                 {p.tags.slice(0, 2).join(', ')}{p.tags.length > 2 ? ` +${p.tags.length - 2}` : ''}
                             </div>
                         </div>
