@@ -79,17 +79,17 @@ export function ProblemList({ problems, selectedId, onSelect }: ProblemListProps
                             onClick={() => onSelect(p.id)}
                             className={`p-2 rounded-md cursor-pointer transition-colors border-l-[3px] ${selectedId === p.id ? 'bg-sidebar-accent border-primary' : 'hover:bg-sidebar-accent/50 border-transparent'}`}
                         >
-                            <div className="flex justify-between items-center mb-0.5">
-                                <div className="font-medium text-xs truncate pr-2 text-sidebar-foreground">
-                                    {p.number ? <span className="mr-1 text-muted-foreground">{p.number}.</span> : null}
-                                    {p.title || 'Untitled'}
-                                </div>
-                                <Badge variant="secondary" className={`text-[9px] px-1 py-0 h-4 font-semibold uppercase ${getDiffColor(p.difficulty)}`}>
+                            <div className="font-medium text-xs truncate text-sidebar-foreground mb-0.5">
+                                {p.number ? <span className="mr-1 text-muted-foreground">{p.number}.</span> : null}
+                                {p.title || 'Untitled'}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                <Badge variant="secondary" className={`text-[9px] px-1 py-0 h-4 font-semibold uppercase flex-shrink-0 ${getDiffColor(p.difficulty)}`}>
                                     {p.difficulty}
                                 </Badge>
-                            </div>
-                            <div className="text-[10px] text-muted-foreground truncate">
-                                {p.tags.slice(0, 2).join(', ')}{p.tags.length > 2 ? ` +${p.tags.length - 2}` : ''}
+                                <span className="truncate">
+                                    {p.tags.slice(0, 2).join(', ')}{p.tags.length > 2 ? ` +${p.tags.length - 2}` : ''}
+                                </span>
                             </div>
                         </div>
                     ))}
