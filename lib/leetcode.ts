@@ -1,5 +1,8 @@
 const API_BASE = 'https://leetcode-api-pied.vercel.app';
 
+// Check if running in Tauri
+const isTauri = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
 // Types for API responses
 export interface LeetCodeSearchResult {
     id: string;
@@ -64,12 +67,32 @@ export interface LeetCodeProblem {
 
 let cachedProblems: LeetCodeProblem[] | null = null;
 
+// Helper to make HTTP requests - uses Tauri HTTP plugin in Tauri, fetch API otherwise
+async function httpGet<T>(url: string): Promise<T> {
+    if (isTauri()) {
+        // Use Tauri's HTTP plugin (no CORS restrictions)
+        const { fetch } = await import('@tauri-apps/plugin-http');
+        const response = await fetch(url, { method: 'GET' });
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+        return response.json() as Promise<T>;
+    } else {
+        // Use regular fetch (with API proxy for dev)
+        const response = await window.fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+        return response.json();
+    }
+}
+
 // Load local problems.json for autocomplete
 export async function getLeetCodeProblems(): Promise<LeetCodeProblem[]> {
     if (cachedProblems) return cachedProblems;
 
     try {
-        const res = await fetch('/problems.json');
+        const res = await window.fetch('/problems.json');
         if (!res.ok) throw new Error('Failed to load problems');
         cachedProblems = await res.json();
         return cachedProblems || [];
@@ -95,9 +118,10 @@ export async function searchLeetCode(query: string): Promise<LeetCodeProblem[]> 
 // Search from API (more accurate but slower)
 export async function searchProblemsAPI(query: string): Promise<LeetCodeSearchResult[]> {
     try {
-        const res = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
-        if (!res.ok) throw new Error('Search API failed');
-        const results: LeetCodeSearchResult[] = await res.json();
+        const url = isTauri()
+            ? `${API_BASE}/search?query=${encodeURIComponent(query)}`
+            : `/api/search?query=${encodeURIComponent(query)}`;
+        const results = await httpGet<LeetCodeSearchResult[]>(url);
         return results.slice(0, 20);
     } catch (error) {
         console.error('Error searching LeetCode API:', error);
@@ -108,12 +132,10 @@ export async function searchProblemsAPI(query: string): Promise<LeetCodeSearchRe
 // Fetch full problem details from API
 export async function getProblemDetails(idOrSlug: string): Promise<LeetCodeProblemDetail | null> {
     try {
-        const res = await fetch(`/api/problem/${encodeURIComponent(idOrSlug)}`);
-        if (!res.ok) {
-            if (res.status === 404) return null;
-            throw new Error('Problem API failed');
-        }
-        const data: LeetCodeProblemDetail = await res.json();
+        const url = isTauri()
+            ? `${API_BASE}/problem/${encodeURIComponent(idOrSlug)}`
+            : `/api/problem/${encodeURIComponent(idOrSlug)}`;
+        const data = await httpGet<LeetCodeProblemDetail>(url);
         return data;
     } catch (error) {
         console.error('Error fetching problem details:', error);
@@ -124,9 +146,8 @@ export async function getProblemDetails(idOrSlug: string): Promise<LeetCodeProbl
 // Get daily challenge
 export async function getDailyChallenge(): Promise<LeetCodeProblemDetail | null> {
     try {
-        const res = await fetch(`/api/daily`);
-        if (!res.ok) throw new Error('Daily API failed');
-        const data: LeetCodeProblemDetail = await res.json();
+        const url = isTauri() ? `${API_BASE}/daily` : `/api/daily`;
+        const data = await httpGet<LeetCodeProblemDetail>(url);
         return data;
     } catch (error) {
         console.error('Error fetching daily challenge:', error);
@@ -137,9 +158,8 @@ export async function getDailyChallenge(): Promise<LeetCodeProblemDetail | null>
 // Get random problem
 export async function getRandomProblem(): Promise<LeetCodeProblemDetail | null> {
     try {
-        const res = await fetch(`/api/random`);
-        if (!res.ok) throw new Error('Random API failed');
-        const data: LeetCodeProblemDetail = await res.json();
+        const url = isTauri() ? `${API_BASE}/random` : `/api/random`;
+        const data = await httpGet<LeetCodeProblemDetail>(url);
         return data;
     } catch (error) {
         console.error('Error fetching random problem:', error);
