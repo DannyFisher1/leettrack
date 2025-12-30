@@ -110,11 +110,11 @@ export function ProblemList({ problems, selectedId, onSelect }: ProblemListProps
                             key={p.id}
                             title={`${p.number ? p.number + '. ' : ''}${p.title || 'Untitled'}`}
                             onClick={() => onSelect(p.id)}
-                            className={`p-2 rounded-md cursor-pointer transition-colors border-l-[3px] overflow-hidden ${selectedId === p.id ? 'bg-sidebar-accent border-primary' : 'hover:bg-sidebar-accent/50 border-transparent'}`}
+                            className={`p-2 rounded-md cursor-pointer transition-colors border-l-[3px] overflow-hidden min-w-0 ${selectedId === p.id ? 'bg-sidebar-accent border-primary' : 'hover:bg-sidebar-accent/50 border-transparent'}`}
                         >
-                            <div className="font-medium text-xs truncate text-sidebar-foreground mb-0.5 min-w-0">
-                                {p.number ? <span className="mr-1 text-muted-foreground">{p.number}.</span> : null}
-                                {p.title || 'Untitled'}
+                            <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center font-medium text-xs text-sidebar-foreground mb-0.5 w-full gap-1">
+                                {p.number ? <span className="text-muted-foreground">{p.number}.</span> : null}
+                                <span className="truncate">{p.title || 'Untitled'}</span>
                             </div>
                             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground min-w-0">
                                 <Badge variant="secondary" className={`text-[9px] px-1 py-0 h-4 font-semibold uppercase flex-shrink-0 ${getDiffColor(p.difficulty)}`}>

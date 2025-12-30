@@ -1,13 +1,36 @@
+export interface ProblemStats {
+  totalAccepted: string;
+  totalSubmission: string;
+  acRate: string;
+}
+
+export interface SimilarQuestion {
+  title: string;
+  titleSlug: string;
+  difficulty: string;
+}
+
 export interface Problem {
   id: string;
   number?: string;
   title: string;
+  titleSlug?: string; // For API lookups
   difficulty: 'Easy' | 'Medium' | 'Hard';
   url: string;
   tags: string[];
-  description: string;
+  // User content
   notes?: string;
   code: string;
+  // API content (cached)
+  content?: string; // HTML problem description
+  hints?: string[];
+  likes?: number;
+  dislikes?: number;
+  stats?: ProblemStats;
+  similarQuestions?: SimilarQuestion[];
+  hasSolution?: boolean;
+  isPaidOnly?: boolean;
+  // Timestamps
   dateAdded: string;
   dateEdited: string;
   // UI state
@@ -100,10 +123,10 @@ const SAMPLE_PROBLEMS: Problem[] = [
     id: '1',
     number: '1',
     title: 'Two Sum',
+    titleSlug: 'two-sum',
     difficulty: 'Easy',
     url: 'https://leetcode.com/problems/two-sum/',
     tags: ['Array', 'Hash Table'],
-    description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.',
     notes: 'Use a hash map to store the complement of the current number.',
     code: 'class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        prevMap = {}\n        for i, n in enumerate(nums):\n            diff = target - n\n            if diff in prevMap:\n                return [prevMap[diff], i]\n            prevMap[n] = i',
     dateAdded: new Date().toISOString(),
@@ -113,10 +136,10 @@ const SAMPLE_PROBLEMS: Problem[] = [
     id: '2',
     number: '146',
     title: 'LRU Cache',
+    titleSlug: 'lru-cache',
     difficulty: 'Medium',
     url: 'https://leetcode.com/problems/lru-cache/',
     tags: ['Design', 'Hash Table', 'Linked List'],
-    description: 'Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.',
     notes: 'Double linked list + hash map is the standard way to achieve O(1) operations.',
     code: 'class LRUCache:\n    def __init__(self, capacity: int):\n        self.cap = capacity\n        self.cache = {} # map key to node\n        self.left, self.right = Node(0, 0), Node(0, 0)\n        self.left.next, self.right.prev = self.right, self.left',
     dateAdded: new Date().toISOString(),
@@ -126,10 +149,10 @@ const SAMPLE_PROBLEMS: Problem[] = [
     id: '3',
     number: '23',
     title: 'Merge k Sorted Lists',
+    titleSlug: 'merge-k-sorted-lists',
     difficulty: 'Hard',
     url: 'https://leetcode.com/problems/merge-k-sorted-lists/',
     tags: ['Linked List', 'Divide and Conquer', 'Heap'],
-    description: 'You are given an array of k linked-lists lists, each linked-list is sorted in ascending order.\n\nMerge all the linked-lists into one sorted linked-list and return it.',
     notes: 'Min-heap is efficient here. Time complexity O(N log k).',
     code: 'class Solution:\n    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:\n        if not lists or len(lists) == 0:\n            return None\n        while len(lists) > 1:\n            mergedList = []\n            for i in range(0, len(lists), 2):\n                l1 = lists[i]\n                l2 = lists[i + 1] if (i + 1) < len(lists) else None\n                mergedList.append(self.mergeList(l1, l2))\n            lists = mergedList\n        return lists[0]',
     dateAdded: new Date().toISOString(),
