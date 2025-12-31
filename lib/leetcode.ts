@@ -67,7 +67,7 @@ export interface LeetCodeProblem {
 
 let cachedProblems: LeetCodeProblem[] | null = null;
 
-// Helper to make HTTP requests - uses Tauri HTTP plugin in Tauri, fetch API otherwise
+// Helper to make HTTP requests - uses Tauri HTTP plugin in Tauri (bypasses CORS)
 async function httpGet<T>(url: string): Promise<T> {
     if (isTauri()) {
         // Use Tauri's HTTP plugin (no CORS restrictions)
@@ -78,7 +78,7 @@ async function httpGet<T>(url: string): Promise<T> {
         }
         return response.json() as Promise<T>;
     } else {
-        // Use regular fetch (with API proxy for dev)
+        // Regular fetch - only works in dev mode or if CORS is allowed
         const response = await window.fetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
@@ -118,9 +118,7 @@ export async function searchLeetCode(query: string): Promise<LeetCodeProblem[]> 
 // Search from API (more accurate but slower)
 export async function searchProblemsAPI(query: string): Promise<LeetCodeSearchResult[]> {
     try {
-        const url = isTauri()
-            ? `${API_BASE}/search?query=${encodeURIComponent(query)}`
-            : `/api/search?query=${encodeURIComponent(query)}`;
+        const url = `${API_BASE}/search?query=${encodeURIComponent(query)}`;
         const results = await httpGet<LeetCodeSearchResult[]>(url);
         return results.slice(0, 20);
     } catch (error) {
@@ -132,9 +130,7 @@ export async function searchProblemsAPI(query: string): Promise<LeetCodeSearchRe
 // Fetch full problem details from API
 export async function getProblemDetails(idOrSlug: string): Promise<LeetCodeProblemDetail | null> {
     try {
-        const url = isTauri()
-            ? `${API_BASE}/problem/${encodeURIComponent(idOrSlug)}`
-            : `/api/problem/${encodeURIComponent(idOrSlug)}`;
+        const url = `${API_BASE}/problem/${encodeURIComponent(idOrSlug)}`;
         const data = await httpGet<LeetCodeProblemDetail>(url);
         return data;
     } catch (error) {
@@ -146,7 +142,7 @@ export async function getProblemDetails(idOrSlug: string): Promise<LeetCodeProbl
 // Get daily challenge
 export async function getDailyChallenge(): Promise<LeetCodeProblemDetail | null> {
     try {
-        const url = isTauri() ? `${API_BASE}/daily` : `/api/daily`;
+        const url = `${API_BASE}/daily`;
         const data = await httpGet<LeetCodeProblemDetail>(url);
         return data;
     } catch (error) {
@@ -158,7 +154,7 @@ export async function getDailyChallenge(): Promise<LeetCodeProblemDetail | null>
 // Get random problem
 export async function getRandomProblem(): Promise<LeetCodeProblemDetail | null> {
     try {
-        const url = isTauri() ? `${API_BASE}/random` : `/api/random`;
+        const url = `${API_BASE}/random`;
         const data = await httpGet<LeetCodeProblemDetail>(url);
         return data;
     } catch (error) {
