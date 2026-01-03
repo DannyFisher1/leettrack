@@ -15,6 +15,7 @@
           "url": "https://leetcode-api-pied.vercel.app/*"
         }
       ]
-    }
+    },
+    "shell:allow-open"
   ]
 }

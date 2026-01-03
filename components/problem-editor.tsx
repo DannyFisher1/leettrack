@@ -12,6 +12,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from "@codemirror/view";
+import { openUrl } from '@/lib/shell';
 
 const codeMirrorExtensions = [python()];
 
@@ -376,10 +377,10 @@ function ProblemEditorComponent({ problem, allTags, onSave, onDelete, onNew }: P
                             <span className="text-emerald-500 font-medium">{formData.stats.acRate} Acceptance</span>
                         )}
                         {formData.url && (
-                            <a href={formData.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
+                            <button onClick={() => openUrl(formData.url!)} className="flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
                                 <ExternalLink className="w-4 h-4" />
                                 Open on LeetCode
-                            </a>
+                            </button>
                         )}
                     </div>
                 )}
@@ -513,18 +514,16 @@ function ProblemEditorComponent({ problem, allTags, onSave, onDelete, onNew }: P
                         {similarExpanded && (
                             <div className="px-4 pb-4 space-y-1">
                                 {formData.similarQuestions.map((sq, i) => (
-                                    <a
+                                    <button
                                         key={i}
-                                        href={`https://leetcode.com/problems/${sq.titleSlug}/`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm"
+                                        onClick={() => openUrl(`https://leetcode.com/problems/${sq.titleSlug}/`)}
+                                        className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm w-full text-left"
                                     >
                                         <span>{sq.title}</span>
                                         <Badge variant="outline" className={`text-[10px] ${getDifficultyColor(sq.difficulty)}`}>
                                             {sq.difficulty}
                                         </Badge>
-                                    </a>
+                                    </button>
                                 ))}
                             </div>
                         )}

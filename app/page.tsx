@@ -62,6 +62,8 @@ export default function TrackerPage() {
             problems={problems}
             selectedId={selectedId}
             onSelect={setSelectedId}
+            onDelete={handleDelete}
+            onNew={handleNew}
           />
         </ResizablePanel>
 
