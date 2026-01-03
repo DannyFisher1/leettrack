@@ -26,6 +26,7 @@ export function ProblemList({ problems, selectedId, onSelect, onDelete, onNew }:
     const [filterText, setFilterText] = React.useState('');
     const [filterDiff, setFilterDiff] = React.useState<string>('All');
     const [filterTag, setFilterTag] = React.useState<string>('All');
+    const [sortBy, setSortBy] = React.useState<string>('number');
     const [contextMenu, setContextMenu] = React.useState<ContextMenu | null>(null);
     const [hoveredId, setHoveredId] = React.useState<string | null>(null);
     const { theme, setTheme } = useTheme();
@@ -56,15 +57,25 @@ export function ProblemList({ problems, selectedId, onSelect, onDelete, onNew }:
         const tagMatch = filterTag === 'All' || p.tags.includes(filterTag);
         return textMatch && diffMatch && tagMatch;
     }).sort((a, b) => {
-        // Sort by number if both have numbers
+        if (sortBy === 'name') {
+            return a.title.localeCompare(b.title);
+        }
+        if (sortBy === 'dateAdded') {
+            return new Date(b.dateAdded || 0).getTime() - new Date(a.dateAdded || 0).getTime();
+        }
+        if (sortBy === 'dateEdited') {
+            return new Date(b.dateEdited || 0).getTime() - new Date(a.dateEdited || 0).getTime();
+        }
+
+        // Default: Sort by number
         const numA = parseInt(a.number || '0');
         const numB = parseInt(b.number || '0');
         if (numA && numB) return numA - numB;
-        if (numA) return -1; // numA has number, b doesn't -> A first
-        if (numB) return 1;  // numB has number, a doesn't -> B first
+        if (numA) return -1;
+        if (numB) return 1;
 
-        // Fallback to date edited descending
-        return new Date(b.dateEdited).getTime() - new Date(a.dateEdited).getTime();
+        // Fallback to name if numbers are missing or equal
+        return a.title.localeCompare(b.title);
     });
 
     // Keyboard navigation
@@ -199,6 +210,17 @@ export function ProblemList({ problems, selectedId, onSelect, onDelete, onNew }:
                             </SelectContent>
                         </Select>
                     </div>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="bg-background border-input h-8 text-xs w-full">
+                            <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="number">Sort by Number</SelectItem>
+                            <SelectItem value="name">Sort by Name</SelectItem>
+                            <SelectItem value="dateAdded">Sort by Date Added</SelectItem>
+                            <SelectItem value="dateEdited">Sort by Last Edited</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
